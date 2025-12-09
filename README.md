@@ -1,6 +1,3 @@
-# golden-path-idp
-A self-service portal that triggers a GitOps workflow (ArgoCD) to provision cloud infrastructure
-
 # 🚀 The Golden Path: Internal Developer Platform (IDP)
 
 ![Platform Engineering](https://img.shields.io/badge/Platform%20Engineering-IDP-blue?style=for-the-badge&logo=kubernetes)
@@ -40,8 +37,6 @@ graph TD
 
     XP -->|9. Injects Secret| K8s
     Dev -->|10. Deploys Code| K8s
-
-
 
 🛠️ Technology Stack & Decisions
 A key part of Platform Engineering is choosing the right tools for the right constraints.
