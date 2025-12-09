@@ -1,0 +1,54 @@
+apiVersion: apiextensions.crossplane.io/v1
+kind: Composition
+metadata:
+  name: xpostgresqlinstances.aws.database.example.org
+  labels:
+    provider: aws
+    guide: quickstart
+spec:
+  compositeTypeRef:
+    apiVersion: database.example.org/v1alpha1
+    kind: XPostgreSQLInstance
+  resources:
+    - name: rds-instance
+      base:
+        apiVersion: rds.aws.upbound.io/v1beta1
+        kind: Instance
+        spec:
+          forProvider:
+            region: us-east-1
+            dbInstanceClass: db.t3.micro
+            masterUsername: adminuser
+            allocatedStorage: 20
+            engine: postgres
+            engineVersion: "13.4"
+            skipFinalSnapshot: true
+            publiclyAccessible: false
+      patches:
+        - fromFieldPath: "spec.parameters.size"
+          toFieldPath: "spec.forProvider.dbInstanceClass"
+          transforms:
+            - type: map
+              map:
+                small: db.t3.micro
+                medium: db.m5.large
+                large: db.m5.2xlarge
+        - fromFieldPath: "spec.parameters.storageGB"
+          toFieldPath: "spec.forProvider.allocatedStorage"
+    - name: kubernetes-secret
+      base:
+        apiVersion: kubernetes.crossplane.io/v1alpha1
+        kind: Object
+        spec:
+          forProvider:
+            manifest:
+              apiVersion: v1
+              kind: Secret
+              metadata:
+                name: db-conn
+                namespace: default
+              stringData:
+                hostname: "CONNECTION_STRING_PLACEHOLDER"
+      patches:
+        - fromFieldPath: "metadata.name"
+          toFieldPath: "spec.forProvider.manifest.metadata.name"

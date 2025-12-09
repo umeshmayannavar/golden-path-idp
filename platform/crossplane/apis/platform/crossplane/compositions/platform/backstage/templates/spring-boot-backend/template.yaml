@@ -1,0 +1,118 @@
+apiVersion: scaffolder.backstage.io/v1beta3
+kind: Template
+metadata:
+  name: create-springboot-service
+  title: Create Spring Boot Microservice
+  description: Scaffolds a production-ready Java app with an AWS RDS database.
+spec:
+  owner: platform-team
+  type: service
+  parameters:
+    - title: Service Details
+      required:
+        - name
+        - owner
+      properties:
+        name:
+          title: Name
+          type: string
+          description: Unique name of the service
+          ui:autofocus: true
+        owner:
+          title: Owner
+          type: string
+          description: Team owning this component
+          ui:field: OwnerPicker
+          ui:options:
+            catalogFilter:
+              kind: Group
+
+    - title: Infrastructure Resources
+      required:
+        - dbSize
+      properties:
+        dbSize:
+          title: Database Size
+          type: string
+          description: The T-Shirt size of your database
+          enum:
+            - small
+            - medium
+            - large
+          default: small
+
+    - title: Repository Location
+      required:
+        - repoUrl
+      properties:
+        repoUrl:
+          title: Repository Location
+          type: string
+          ui:field: RepoUrlPicker
+          ui:options:
+            allowedHosts:
+              - github.com
+
+  steps:
+    # 1. Fetch the Skeleton Code (You need a 'skeleton' folder next to this file)
+    - id: fetch-base
+      name: Fetch Base
+      action: fetch:template
+      input:
+        url: ./skeleton
+        values:
+          name: ${{ parameters.name }}
+          owner: ${{ parameters.owner }}
+
+    # 2. Add the Crossplane Claim for the Database
+    - id: add-db-claim
+      name: Add Database Resource
+      action: fs:write
+      input:
+        path: infra/db-claim.yaml
+        content: |
+          apiVersion: database.example.org/v1alpha1
+          kind: PostgreSQLInstance
+          metadata:
+            name: ${{ parameters.name }}-db
+            namespace: ${{ parameters.name }}
+          spec:
+            parameters:
+              storageGB: 20
+              size: ${{ parameters.dbSize }}
+
+    # 3. Add Catalog Info for Backstage
+    - id: add-backstage-catalog
+      name: Create Catalog Info
+      action: fs:write
+      input:
+        path: catalog-info.yaml
+        content: |
+          apiVersion: backstage.io/v1alpha1
+          kind: Component
+          metadata:
+            name: ${{ parameters.name }}
+            annotations:
+              argocd/app-name: ${{ parameters.name }}
+          spec:
+            type: service
+            lifecycle: production
+            owner: ${{ parameters.owner }}
+
+    # 4. Publish to GitHub
+    - id: publish
+      name: Publish to GitHub
+      action: publish:github
+      input:
+        allowedHosts: ['github.com']
+        description: This is ${{ parameters.name }}
+        repoUrl: ${{ parameters.repoUrl }}
+        repoVisibility: public
+
+    # 5. Register in Backstage
+    - id: register
+      name: Register
+      action: catalog:register
+      input:
+        repoContentsUrl: ${{ steps.publish.output.repoContentsUrl }}
+        catalogInfoPath: '/catalog-info.yaml'
