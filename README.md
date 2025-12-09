@@ -42,4 +42,31 @@ graph TD
     Dev -->|10. Deploys Code| K8s
 
 
-    
+
+🛠️ Technology Stack & Decisions
+A key part of Platform Engineering is choosing the right tools for the right constraints.
+Component	Technology	Why this choice?
+Portal	Backstage.io	The industry standard for IDPs. Extensible, supports software catalogs, and integrates well with GitHub.
+GitOps	ArgoCD	chosen over Flux for its visual UI and multi-cluster "ApplicationSet" capabilities which simplify managing 100s of microservices.
+Infra Plane	Crossplane	Crucial Decision: Unlike Terraform (which is "Fire and Forget"), Crossplane uses Kubernetes Control Loops to ensure infrastructure constantly matches the desired state (Drift Detection & Auto-Healing).
+Cloud	AWS	Standard provider, targeting RDS (Relational Database Service) for this demo.
+API Abstraction	Composite Resources (XRs)	Allows us to define "T-Shirt Sizes" (Small, Medium, Large) so developers don't need to know AWS specific parameters (VPC IDs, Subnets, etc).
+
+
+
+📂 Repository Structure
+The repository is organized to separate the Platform Logic (Control Plane) from the Consumer Logic (Tenants).
+
+├── 📂 platform/
+│   ├── 📂 backstage/
+│   │   ├── app-config.yaml          # Portal Configuration
+│   │   └── 📂 templates/            # "Golden Path" Templates
+│   ├── 📂 crossplane/
+│   │   ├── 📂 apis/                 # XRDs (API Definitions)
+│   │   └── 📂 compositions/         # AWS Implementation Logic
+│   └── 📂 argocd/
+│       └── app-of-apps.yaml         # The Bootstrap logic
+├── 📂 tenant-resources/             # GitOps Target for Developer Apps
+└── README.md
+
+
