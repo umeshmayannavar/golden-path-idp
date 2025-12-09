@@ -11,33 +11,6 @@ Moving away from traditional "TicketOps," this platform empowers developers to s
 
 ---
 
-## 🏗️ High-Level Architecture
-
-The system follows a strict **GitOps** workflow. No infrastructure is provisioned manually. The "State of the World" is entirely defined in Git.
-
-```mermaid
-graph TD
-    subgraph "Developer Experience Layer"
-        Dev[User / Developer] -->|1. Clicks Create| Backstage[Backstage Portal]
-    end
-
-    subgraph "Control Plane (Kubernetes)"
-        Backstage -->|2. Commits Config| Git[GitHub Repo]
-        Argo[ArgoCD Controller] -->|3. Syncs Changes| Git
-        Argo -->|4. Applies Manifests| K8s[K8s Cluster]
-        
-        XP[Crossplane Controller] -->|5. Detects Claim| K8s
-    end
-
-    subgraph "Cloud Provider (AWS)"
-        XP -->|6. Provisions Resource| RDS[(AWS RDS Database)]
-        XP -->|7. Provisions IAM| IAM[IAM Roles]
-        RDS -->|8. Returns Connection Secret| XP
-    end
-
-    XP -->|9. Injects Secret| K8s
-    Dev -->|10. Deploys Code| K8s
-
 🛠️ Technology Stack & Decisions
 A key part of Platform Engineering is choosing the right tools for the right constraints.
 Component	Technology	Why this choice?
