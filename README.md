@@ -26,20 +26,4 @@ API Abstraction	Composite Resources (XRs)	Allows us to define "T-Shirt Sizes" (S
 
 
 
-## 📂 Repository Structure
-
-The repository is organized to separate the Platform Logic (Control Plane) from the Consumer Logic (Tenants).
-
-├── 📂 platform/
-│   ├── 📂 backstage/
-│   │   ├── app-config.yaml          # Portal Configuration
-│   │   └── 📂 templates/            # "Golden Path" Templates
-│   ├── 📂 crossplane/
-│   │   ├── 📂 apis/                 # XRDs (API Definitions)
-│   │   └── 📂 compositions/         # AWS Implementation Logic
-│   └── 📂 argocd/
-│       └── app-of-apps.yaml         # The Bootstrap logic
-├── 📂 tenant-resources/             # GitOps Target for Developer Apps
-└── README.md
-
 
